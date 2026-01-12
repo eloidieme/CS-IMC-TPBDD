@@ -42,9 +42,17 @@ SELECT a.primaryName, COUNT(j.idFilm) AS NumberOfFilms FROM tArtist AS a INNER J
 -- On filtre aussi sur la catégorie 'acted in' pour ne considérer que les rôles d'acteur.
 
 -- Exercice 6: Trouvez les artistes ayant eu plusieurs responsabilités au cours de leur carrière (acteur, directeur, producteur...).
-
+SELECT a.primaryName, COUNT(DISTINCT j.category) AS NumberOfRoles FROM tArtist AS a INNER JOIN tJob AS j ON a.idArtist = j.idArtist GROUP BY a.primaryName HAVING COUNT(DISTINCT j.category) > 1;
+-- Commentaire: Similaire à l'exercice précédent, mais cette fois on compte le nombre distinct de catégories (rôles) pour chaque artiste.
 
 -- Exercice 7: Trouver le nom du ou des film(s) ayant le plus d'acteurs (i.e. uniquement acted in).
-
+SELECT f.primaryTitle, COUNT(j.idArtist) AS NumberOfActors FROM tFilm AS f INNER JOIN tJob AS j ON f.idFilm = j.idFilm WHERE j.category = 'acted in' GROUP BY f.primaryTitle ORDER BY NumberOfActors DESC;
+-- Commentaire: On utilise une jointure entre tFilm et tJob pour relier les films à leurs acteurs. 
+-- Ensuite on groupe par film et on compte le nombre d'acteurs, puis on ordonne pour obtenir le classement.
+-- On trouve que le gagnant est "Heidi - Rescue of the Lynx", avec 36 acteurs.
 
 -- Exercice 8: Montrez les artistes ayant eu plusieurs responsabilités dans un même film (ex: à la fois acteur et directeur, ou toute autre combinaison) et les titres de ces films.
+SELECT a.primaryName, f.primaryTitle, COUNT(DISTINCT j.category) AS NumberOfRoles FROM tArtist AS a INNER JOIN tJob AS j ON a.idArtist = j.idArtist INNER JOIN tFilm AS f ON j.idFilm = f.idFilm GROUP BY a.primaryName, f.primaryTitle HAVING COUNT(DISTINCT j.category) > 1;
+-- Commentaire: On utilise des jointures entre tArtist, tJob et tFilm pour relier les artistes à leurs films et rôles. 
+-- Ensuite on groupe par artiste et film, et on compte le nombre distinct de catégories (rôles) pour chaque combinaison.
+-- Enfin, on filtre avec HAVING pour ne garder que ceux ayant plusieurs rôles dans le même film.
