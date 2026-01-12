@@ -16,3 +16,13 @@ Pour les attributs des entités:
 */
 
 -- Exercice 1: Année de naissance de l'artiste Jude Law
+SELECT primaryName, birthYear FROM tArtist WHERE primaryName LIKE '%Jude Law%';
+
+-- Commentaire: Jude Law est né en 1972. On le trouve à partir d'une simple requête sur une seule table avec filtre (WHERE .. LIKE).
+-- On utilise LIKE pour avoir plus de flexibilité sur le string-matching.
+
+-- Exercice 2: Nombre d'artistes présents dans la BDD
+SELECT COUNT(*) FROM tArtist;
+
+-- Commentaire: Il y a 82046 artistes dans la BDD. On utilise une fonction d'agrégation (COUNT) pour compter le nombre de lignes dans la table tArtist.
+
