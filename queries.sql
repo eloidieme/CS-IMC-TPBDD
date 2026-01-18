@@ -16,7 +16,9 @@ Pour les attributs des entités:
 */
 
 -- Exercice 1: Visualisez l'année de naissance de l'artiste *Jude Law (Brad Pitt n'étant pas dans la BDD).
-SELECT primaryName, birthYear FROM tArtist WHERE primaryName LIKE '%Jude Law%';
+SELECT primaryName, birthYear 
+FROM tArtist 
+WHERE primaryName LIKE '%Jude Law%';
 -- Commentaire: Jude Law est né en 1972. On le trouve à partir d'une simple requête sur une seule table avec filtre (WHERE .. LIKE).
 -- On utilise LIKE pour avoir plus de flexibilité sur le string-matching.
 
@@ -30,13 +32,22 @@ SELECT COUNT(*) FROM tArtist WHERE birthYear = 1960;
 -- Commentaire: Il y a 203 artistes nés en 1960 dans la BDD. On utilise ici aussi du filtrage et une fonction d'aggrégation.
 
 -- Exercice 4: Trouvez l'année de naissance la plus représentée parmi les acteurs (sauf 0!), et combien d'acteurs sont nés cette année là.
-SELECT birthYear, COUNT(*) FROM tArtist WHERE birthYear <> 0 GROUP BY birthYear ORDER BY COUNT(*) DESC;
+SELECT birthYear, COUNT(*) 
+FROM tArtist 
+WHERE birthYear <> 0 
+GROUP BY birthYear 
+ORDER BY COUNT(*) DESC;
 -- Commentaire: L'année de naissance la plus représentée parmi les acteurs est 1980 (avec 477 occurences). 
 -- Cette fois on combine une fonction d'aggrégation avec un GROUP BY pour grouper les artistes par année de naissance. 
 -- Enfin on ordonne pour obtenir le classement.
 
 -- Exercice 5: Trouvez les artistes ayant joué dans plus d'un film.
-SELECT a.primaryName, COUNT(j.idFilm) AS NumberOfFilms FROM tArtist AS a INNER JOIN tJob AS j ON a.idArtist = j.idArtist WHERE j.category = 'acted in' GROUP BY a.primaryName HAVING COUNT(j.idFilm) > 1;
+SELECT a.primaryName, COUNT(j.idFilm) AS NumberOfFilms 
+FROM tArtist AS a 
+INNER JOIN tJob AS j ON a.idArtist = j.idArtist 
+WHERE j.category = 'acted in'
+GROUP BY a.primaryName
+HAVING COUNT(j.idFilm) > 1;
 -- Commentaire: On utilise une jointure entre tArtist et tJob pour relier les artistes à leurs films. 
 -- Ensuite on groupe par artiste et on utilise HAVING pour filtrer ceux ayant plus d'un film.
 -- On filtre aussi sur la catégorie 'acted in' pour ne considérer que les rôles d'acteur.
@@ -50,22 +61,26 @@ HAVING COUNT(DISTINCT j.category) > 1;
 -- Commentaire: Similaire à l'exercice précédent, mais cette fois on compte le nombre distinct de catégories (rôles) pour chaque artiste.
 
 -- Exercice 7: Trouver le nom du ou des film(s) ayant le plus d'acteurs (i.e. uniquement acted in).
-SELECT f.primaryTitle, COUNT(j.idArtist) AS NumberOfActors 
-FROM tFilm AS f INNER JOIN tJob AS j ON f.idFilm = j.idFilm 
-WHERE j.category = 'acted in' 
-GROUP BY f.primaryTitle 
-ORDER BY NumberOfActors DESC;
--- Commentaire: On utilise une jointure entre tFilm et tJob pour relier les films à leurs acteurs. 
--- Ensuite on groupe par film et on compte le nombre d'acteurs, puis on ordonne pour obtenir le classement.
--- On trouve que le gagnant est "Heidi - Rescue of the Lynx", avec 36 acteurs.
-
--- Exercice 8: Montrez les artistes ayant eu plusieurs responsabilités dans un même film (ex: à la fois acteur et directeur, ou toute autre combinaison) et les titres de ces films.
-SELECT f.idFilm, f.primaryTitle, COUNT(j.idArtist) AS NumberOfActors 
+SELECT TOP 1 WITH TIES f.idFilm, f.primaryTitle, COUNT(DISTINCT j.idArtist) AS NumberOfActors 
 FROM tFilm AS f 
 INNER JOIN tJob AS j ON f.idFilm = j.idFilm 
+INNER JOIN tArtist AS a ON j.idArtist = a.idArtist
 WHERE j.category = 'acted in' 
 GROUP BY f.idFilm, f.primaryTitle 
 ORDER BY NumberOfActors DESC;
+-- Commentaire: On utilise une jointure entre tFilm, tJob et tArtist pour relier les films à leurs acteurs et on utilise COUNT(DISTINCT j.idArtist) car tJob contient des doublons.
+-- On ajoute aussi un INNER JOIN avec tArtist car certains idArtist dans tJob n'existent pas dans tArtist.
+-- On filtre sur la catégorie 'acted in' pour ne considérer que les rôles d'acteur.
+-- Ensuite on groupe par film et on ordonne pour obtenir le classement.
+-- On trouve plusieurs films ex-aequo avec 10 acteurs (ex: "Der zweite Gang", "Bloodline of the Jewel", etc.).
+
+-- Exercice 8: Montrez les artistes ayant eu plusieurs responsabilités dans un même film (ex: à la fois acteur et directeur, ou toute autre combinaison) et les titres de ces films.
+SELECT a.primaryName, f.primaryTitle, COUNT(DISTINCT j.category) AS NumberOfRoles
+FROM tArtist AS a
+INNER JOIN tJob AS j ON a.idArtist = j.idArtist
+INNER JOIN tFilm AS f ON j.idFilm = f.idFilm
+GROUP BY a.idArtist, a.primaryName, f.idFilm, f.primaryTitle
+HAVING COUNT(DISTINCT j.category) > 1;
 -- Commentaire: On utilise des jointures entre tArtist, tJob et tFilm pour relier les artistes à leurs films et rôles. 
 -- Ensuite on groupe par artiste et film, et on compte le nombre distinct de catégories (rôles) pour chaque combinaison.
 -- Enfin, on filtre avec HAVING pour ne garder que ceux ayant plusieurs rôles dans le même film

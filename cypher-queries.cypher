@@ -54,4 +54,7 @@ MATCH (a:Artist)-[:acted_in]->(f:Film) WITH f, count(a) AS nombre_acteurs ORDER 
 // Commentaire: on utilise une requête MATCH pour trouver tous les noeuds Artist qui ont une relation ACTED_IN avec des noeuds Film. 
 // Ensuite, on compte le nombre d'acteurs pour chaque film, on trie les films par nombre d'acteurs en ordre décroissant,
 // on limite le résultat au film ayant le plus d'acteurs, et on retourne le titre du film et le nombre d'acteurs correspondants.
-// On obtient "Myths of the Mother" avec 34 acteurs, ce qui est différent du résultat avec les requêtes SQL. TODO: investiguer pourquoi.
+// On obtient "Myths of the Mother" avec 34 acteurs, ce qui diffère du résultat SQL (10 acteurs max) pour deux raisons:
+// 1) La table tJob contient des doublons (même artiste/film/catégorie plusieurs fois), exportés tels quels vers Neo4j
+// 2) La requête SQL utilise COUNT(DISTINCT) et INNER JOIN tArtist pour éliminer les doublons et les artistes orphelins
+// Pour corriger cela, il faudrait modifier l'export avec SELECT DISTINCT dans la requête SQL de export-neo4j.py
